@@ -30,8 +30,7 @@ size(cons(_, T), s(N)) :- size(T, N).
 sum(A, zero, A).
 sum(A, s(B), s(C)) :- sum(A, B, C).
 % sum_list (List , Sum )
-sum_list(nil, zero).					% caso lista vuota (opzionale)
-sum_list(cons(H, nil), H).		% caso un solo elemento
+sum_list(nil, zero).				  % caso lista vuota (opzionale)
 sum_list(cons(H, T), Res) :- % caso generale ricorsivo: sommo e vado avanti
 	sum_list(T, ResT),
 	sum(ResT, H, Res).
@@ -72,13 +71,9 @@ min_max(cons(E, L), TMin, TMax, Min, Max) :- % caso nuovo minimo
 	greater(TMin, E),
 	min_max(L, E, TMax, Min, Max).
 min_max(cons(E, L), TMin, TMax, Min, Max) :- % caso nè nuovo minimo nè nuovo massimo: passo
-	greater(E, LessEqual),
-	TMax\=LessEqual,
-	greater(Greater, E),
-	TMin\=Greater,
+	greater(TMax, E),
+	greater(E, TMin),
 	min_max(L, TMin, TMax, Min, Max).
-
-
 
 % 3.1
 % same (List1 , List2 ) --> are the two lists exactly the same ?
