@@ -1,168 +1,192 @@
-% Ex 1
 % 1.1
-% search(Elem, List)
-search(X, cons(X, _)).
-search(X, cons(_, Xs)) :- search(X, Xs).
+% search2(Elem, List )
+% looks for two consecutive occurrences of Elem
+search2(E, [E, E | _]).
+search2(E, [_ | T]) :- search2(E, T).
 
 % 1.2
-% search2 (Elem , List) --> looks for two consecutive occurrences of Elem
-search2(X, cons(X, cons(X, _))).
-search2(X, cons(_ , Xs )) :- search2(X, Xs).
+% search_two(Elem , List)
+% looks for two occurrences of Elem with any element in between!
+search_two(E, [E, _, E | _]).
+search_two(E, [_ | T]) :- search_two(E, T).
 
 % 1.3
-% search_two(Elem, List)
-% looks for two occurrencies of Elem with any element in between!
-search_two(X, cons(X, cons(_, cons(X, _)))).
-search_two(X, cons(_, Xs)) :- search_two(X, Xs).
+% size(List, Size)
+size([], 0).
+size([E | T], S) :- size(T, Ss), S is Ss + 1.
 
 % 1.4
-% search_anytwo(Elem, List) --> looks for any Elem that occurs two times, anywhere
-search_anytwo(X, cons(X, Xs)) :- search(X, Xs).
-search_anytwo(X, cons(_, Xs)) :- search_anytwo(X, Xs).
+% sum(List, Sum)
+sum([], 0).
+sum([E | T], S) :- sum(T, Ss), S is Ss + E.
+
+% 1.5
+% max(List, Max, Min)
+max_min([H | List], Max, Min) :- max_min(List, H, H, Max, Min).
+max_min([], Max, Min, Max, Min).
+max_min([H | List], TMax, TMin, Max, Min):-
+	H > TMax,
+	!,
+	max_min(List, H, TMin, Max, Min).
+max_min([H | List], TMax, TMin, Max, Min):-
+	H < TMin,
+	!,
+	max_min(List, TMax, H, Max, Min).
+max_min([H | List], TMax, TMin, Max, Min):-
+	max_min(List, TMax, TMin, Max, Min).
+
+% 1.6
+% split (List1 , Elements , SubList1 , SubList2 )
+% example : split([10 ,20 ,30 ,40 ,50], 2, L1, L2). 
+%           -> L1/[10 ,20] L2 /[30 ,40 ,50]
+split(List, 0, [], List):- !.
+split([H | L], Split, [H | SubList1], SubList2):-
+	DecSplit is Split - 1,
+	split(L, DecSplit, SubList1, SubList2).
+
+% 1.7
+% rotate(List, RotatedList)
+% example: rotate([10, 20, 30, 40], L). -> L /[20 ,30 ,40 ,10]
+rotate([H | T], RList):- append(T, [H], RList).
+
+% 1.8
+% count_occurrences ( Element , List , Count )
+% example : count_occurrences(2, [1, 2, 3, 2, 4, 2], Count). -> Count /3
+count_occurrences(_, [], 0).
+count_occurrences(E, [E | T], Count):-
+	!,
+	count_occurrences(E, T, Counts),
+	Count is Counts + 1.
+count_occurrences(E, [_ | T], Count):-
+	count_occurrences(E, T, Count).
+
+% 1.9
+% Utile per dice (range)
+% interval(@A, @B, -X).
+interval(A, _, A).
+interval(A, B, X):- A2 is A +1, A2 < B, interval(A2, B, X).
+
+% dice(X)
+% Generates all possible outcomes of throwing a dice .
+% example : dice (X): X /1; X/2; ... X/6
+dice(X):- interval(1, 7, X).
+
+% 1.10
+% Generalizzazione di three_dice
+n_dice([], 0):- !.
+n_dice([X | L], N) :- 
+	dice(X),
+	Nn is N - 1, 
+	n_dice(L, Nn).
+	
+% three_dice(L)
+three_dice(L):- n_dice(L, 3).
+
+% 1.11
+
+% distinct(+List, -DistinctList)
+% DistinctList contains all distinct elements from List .
+% example : distinct([1 ,2 ,3 ,2 ,4 ,1] ,L). -> L/[1 ,2 ,3 ,4]
+distinct([], []).
+distinct([E | T], DT) :- member(E, T), !,  distinct(T, DT).
+distinct([E | T], [E | DT]) :- distinct(T, DT).
 
 % 2.1
-% size (List , Size)
-size(nil, zero).
-size(cons(_, T), s(N)) :- size(T, N).
+% dropAny(?Elem, ?List, ?OutList)
+dropAny(X, [X|T], T).
+dropAny(X, [H|Xs], [H|L]):- dropAny(X, Xs, L).
 
-% 2.2
-% SOMMA NUMERI PEANO
-sum(A, zero, A).
-sum(A, s(B), s(C)) :- sum(A, B, C).
-% sum_list (List , Sum )
-sum_list(nil, zero).				  % caso lista vuota (opzionale)
-sum_list(cons(H, T), Res) :- % caso generale ricorsivo: sommo e vado avanti
-	sum_list(T, ResT),
-	sum(ResT, H, Res).
+% 2.2 
+% dropFirst: drops only the first occurrence (showing no alternative results)
+dropFirst(E, L, DL):- dropAny(E, L, DL), !.
 
-% 2.3
-% count(List, Element, NOccurrences)
-count(List, E, N) :- count(List, E, zero, N).							% uso "variabile extra"
-% definiamo la funzione ausiliaria
-count(nil, _, N, N). 																				% caso base
-count(cons(E, L), E, N, M) :- count(L, E, s(N), M). 				% caso match testa
-count(cons(E, L), E2, N, M) :- E\=E2, count(L, E2, N, M). % caso NON match testa: passo
+% dropLast: drops only the last occurrence (showing no alternative results)
 
-% Necessaria per la max
-greater(s(_), zero).
-greater(s(G), s(N)) :- greater(G, N).
-	
-% 2.4
-% max(List , Max )
-% Max is the biggest element in List
-% Suppose the list has at least one element
-max(cons(First, L), Max) :- max(L, First, Max).
-max(nil, M, M). 					  % caso base
-max(cons(E, L), TM, M) :-  % caso nuovo massimo
-	greater(E, TM),
-	max(L, E, M).
-max(cons(E, L), TM, M) :-  % caso NON nuovo massimo: passo
-	greater(TM, E),
-	max(L, TM, M).
+% my version
+%dropLast(E, [H|T], [H|DL]):- member(E, T), !, dropLast(E, T, DL).
+%dropLast(E, [E|T], T).
 
-% 2.5
-% min-max(List, Min, Max) [Suppose the list has at least one element]
-min_max(cons(First, L), Min, Max) :- min_max(L, First, First, Min, Max).
-min_max(nil, TMin, TMax, TMin, TMax).        % caso base
-min_max(cons(E, L), TMin, TMax, Min, Max) :- % caso nuovo massimo
-	greater(E, TMax),
-	min_max(L, TMin, E, Min, Max).
-min_max(cons(E, L), TMin, TMax, Min, Max) :- % caso nuovo minimo
-	greater(TMin, E),
-	min_max(L, E, TMax, Min, Max).
-min_max(cons(E, L), TMin, TMax, Min, Max) :- % caso nè nuovo minimo nè nuovo massimo: passo
-	greater(TMax, E),
-	greater(E, TMin),
-	min_max(L, TMin, TMax, Min, Max).
+% version by swapping dropAny clauses
+%dropLast(X, [H|Xs], [H|L]):- dropLast(X, Xs, L), !.
+%dropLast(X, [X|T], T).
+
+% compact version (not efficient)
+dropLast(X, L, DL):- 	reverse(L, RL), dropFirst(X, RL, RDL), reverse(RDL, DL).
+
+% dropAll: drop all occurrences, returning a single list as a result
+dropAll(E, L, DA):- member(E, L), !, dropFirst(E, L, DF), dropAll(E, DF, DA).
+dropAll(_, L, L).
 
 % 3.1
-% same (List1 , List2 ) --> are the two lists exactly the same ?
-same(nil, nil).
-same(cons(H, L1), cons(H,L2)) :- same(L1, L2).
-% same(L, L). SAREBBE STATO EQUIVALENTE?
+% fromList(+List, -Graph)
+fromList([_], []).
+fromList([H1, H2|T], [e(H1, H2)|L]):- fromList([H2|T], L).
 
 % 3.2
-% all_bigger(List1, List2) --> all elements in List1 are bigger than those in List2 , 1 by 1
-all_bigger(nil, nil).
-all_bigger(cons(H1, L1), cons(H2, L2)) :-
-	greater(H1, H2),
-	all_bigger(L1, L2).
+% outDegree(+Graph, +Node, -Deg)
+% Deg is the number of edges which start from Node
+outDegree([], _, 0):- !.
+outDegree([e(N, _)|T], N, D):- !, outDegree(T, N, Dd), D is Dd + 1.
+outDegree([_|T], N, D):- outDegree(T, N, D).
 
 % 3.3
-% sublist(List1, List2 )
-% List1 should contain elements all also in List2
-sublist(nil, _).
-sublist(cons(H, L1), L2) :-
-	search(H, L2),
-	sublist(L1, L2).
+% reaching(+Graph, +Node, -List)
+% all the nodes that can be reached in 1 step from Node
+% possibly use findall, looking for e(Node, _) combined with member(?Elem, ?List)
+reaching(G, Node, Res):- findall(E, (member(e(Node, E), G)), Res).
 
-% 4.1
-% seq(N,E, List ) --> List is [E,E ,... ,E] with size N
-% example : seq( s(s(s( zero ))), a, cons(a, cons(a, cons(a, nil )))).
-seq(zero, _, nil).
-seq(s(N), E, cons(E, T)) :- seq(N, E, T).
+% 3.4
+% nodes(+Graph, -Nodes)
+% create a list of all nodes(no duplicates) in the graph(inverse of fromList)
+nodes(Graph, Nodes):- nodes(Graph, Nodes, All), distinct(All, Nodes).
+nodes([], _, []).
+nodes([e(S, D)|T],_, [S, D|List]):- nodes(T, _, List).
 
-% 4.2
-% seqR(N, List)
-% example: seqR(s(s(s(zero))), cons(s(s(zero)),cons(s(zero),cons(zero,nil)))).
-seqR(zero, nil).
-seqR(s(N), cons(N,L)) :-seqR(N, L).
+% 3.5
+% anypath(+Graph, +Node1, +Node2, -ListPath)
+% a path from Node1 to Node2, if there are many path, they are showed 1-by-1
+anypath(G, N1, N2, [e(N1, N2)]):- reaching(G, N1, L1), member(N2, L1).
+anypath(G, N1, N2, [e(N1, E)|LD]):- member(e(N1, E), G), anypath(G, E, N2, LD).
 
-% Predicato ausiliario last
-last(nil, Last, cons(Last, nil)).
-last(cons(H, L2), Last, cons(H, L)) :- last(L2, Last, L).
-% working with --> last(cons(a,cons(b,nil)),c,cons(a,cons(b,cons(c,nil)))).
-% NB: funziona anche come append
+% 3.6
+% allreaching(+Graph, +Node, -List)
+% all the nodes that can be reached from Node
+% Suppose the graph is NOT circular! Use findall and anyPath !
+allreaching(G, N, L):- 	findall(E, anypath(G, N, E, _), L).
 
-%Ex4.3: seqR2
-% seqR2 (N, List ) --> is [0 ,1 ,... ,N -1]
-% example: seqR2(s(s(s(zero))), cons(zero,cons(s(zero),cons(s(s(zero)),nil)))).
-seqR2(zero, nil).
-seqR2(s(N), NL) :-
-	last(L, N, NL),
-	seqR2(N, L).
+%--- --------------------
+% From lesson slides
+%------------------------
+neighbour(X, Y, X, Y2) :- Y2 is Y + 1.
+neighbour(X, Y, X, Y2) :- Y2 is Y - 1.
+neighbour(X, Y, X2, Y) :- X2 is X + 1.
+neighbour(X, Y, X2, Y) :- X2 is X - 1.
 
-% Ex 5: Functions for List[Int]
-% filter(List, Predicate)
-filter(nil, nil).
-filter(cons(H, L), cons(H, FL)) :- 
-	filter_pred(H), 
-	filter(L, FL).
-filter(cons(H, L), FL) :- 
-	filter_pred(Ok),
-	H\=Ok, 
-	filter(L, FL).
-% Il predicato per il filtraggio va specificato qui: 
-filter_pred(s(N)). % esempio: filtra solo numeri > 0
-% Esempio goal:
-% filter(cons(s(zero), cons(zero, cons(s(s(zero)), nil))), L) => in L trovo la lista [1,2], zero rimosso
+gridlink(N, M, link(X, Y, X2, Y2)) :-
+    interval(0, N, X),
+    interval(0, M, Y),
+    neighbour(X, Y, X2, Y2),
+    X2 >= 0, Y2 >= 0, X2 < N, Y2 < M.
+%-------------------------
 
-% map(List, Mapping_Func)
-map(nil, nil).
-map(cons(H, L), cons(NH, NL)) :- 
-	map_func(H, NH), 
-	map(L, NL).
-% La funzione di mapping va specificata qui:
-map_func(N, s(N)). % esempio: incrementa ogni elemento di uno
-% Esempio goal:
-% map(cons(s(zero), cons(s(s(s(zero))), cons(s(s(zero)), nil))), L) => in L trovo tutti gli elementi INCREMENTATI di uno
-% map(L, cons(s(zero), cons(s(s(s(zero))), cons(s(s(zero)), nil)))) => in L trovo tutti gli elementi DECREMENTATI di uno
+% 3.7
+% (auxiliar) Generate an edge for a Graph of size S
+% gridedge(+Size, ?Edge)
+gridedge(S, e(E1, E2)):- interval(0, S, E1), interval(0, S, E2), E1=\=E2.
 
-% take(List, Number)
-take(nil, _, nil).
-take(_, zero, nil).
-take(cons(H, L), s(N), cons(H, L2)) :- take(L, N, L2).
-% Esempio goal:
-% take(cons(s(zero), cons(s(s(s(zero))), cons(zero, cons(s(s(zero)), cons(s(zero), nil))))), s(s(zero)), L)
-% 	=> in L trovo solo la lista con solo i primi due elementi [1,3]
-% take(cons(s(zero), nil), s(s(zero)), L) => ho chiesto due elementi, ce n'era solo uno, in L trovo quello
+% Grid Graph construction (1-dimension)
+% gridgraph(+Width, +Height, -Graph)
+gridgraph(N, M, G):- Size is N * M, findall(E, gridedge(Size, E), G).
 
-% reversed(List)
-reversed(nil, nil).
-reversed(cons(H, T), RL):-
-	last(ORL, H, RL),
-	reversed(T, ORL).
-% Esempio goal:
-% reversed(cons(s(zero), cons(s(s(s(zero))), cons(zero, cons(s(s(zero)), nil)))), L) => in L trovo la lista ribaltata
-% reversed(L, cons(s(zero), cons(s(s(s(zero))), cons(zero, cons(s(s(zero)), nil))))) => posso invertire Input/Output
+% Grid Graph construction (2-dimension)
+% gridgraph_2(+Width, +Height, -Graph)
+% Functor "n" for representing the node
+gridgraph_2(N, M, G) :- findall(e(n(X,Y), n(X2,Y2)), gridlink(N, M, link(X,Y,X2,Y2)), G).
 
+% (auxiliar) allpathcount(+Graph, +Source, +Destination, -NHops, -Path)
+allpathcount(G, S, D, 1, [e(S, D)]):- member(e(S, D), G), !.
+allpathcount(G, S, D, N, [e(S, E)|Path]):- member(e(S, E), G), allpathcount(G, E, D, Hop, Path), N is Hop + 1.
+
+% allpathlimited(+Graph, +Source, +Destination, ?MaxHops, -Path)
+allpathlimited(G, S, D, Max, Path):- var(Max), allpathcount(G, S, D, Max, Path).
+allpathlimited(G, S, D, Max, Path):- number(Max), allpathcount(G, S, D, N, Path), N =< Max.
